@@ -20,7 +20,10 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         private readonly IConfiguration _configuration;
         private readonly SignInManager<BaseUser> _signManager;
         private readonly IMailService _mailService;
-        private static readonly Dictionary<string, (int Code, DateTime Expiry)> verificationCodes = [];
+        private static readonly Dictionary<string, (int Code, DateTime Expiry)> verificationCodes = new Dictionary<string, (int Code, DateTime Expiry)>
+        {
+
+        };
         private readonly IGoogleIdTokenValidationService _googleIdTokenValidationService;
         public AuthService(RoleManager<IdentityRole> roleManager, UserManager<BaseUser> userManager, IConfiguration configuration, SignInManager<BaseUser> signManager, IMailService mailService, IGoogleIdTokenValidationService googleIdTokenValidationService)
         {

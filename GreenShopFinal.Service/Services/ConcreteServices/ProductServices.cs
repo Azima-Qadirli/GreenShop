@@ -16,12 +16,14 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public ProductServices(IProductRepository productRepository, IMapper mapper, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor)
+        private readonly IPhotoService _photoService;
+        public ProductServices(IProductRepository productRepository, IMapper mapper, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor, IPhotoService photoService)
         {
             _productRepository = productRepository;
             _mapper = mapper;
             _env = env;
             _httpContextAccessor = httpContextAccessor;
+            _photoService = photoService;
         }
 
         public async Task<ApiResponse> Create(ProductPostDto dto)
@@ -30,10 +32,21 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             string root = _env.WebRootPath;
             string path = "assets/img/product";
             var req = _httpContextAccessor.HttpContext.Request;
-            foreach (var image in dto.File.ToString())
+            var ismain = 0;
+            foreach (var image in dto.Images)
             {
+                var res = await _photoService.AddPhotoAsync(image);
+                BaseImage baseImage = new BaseImage()
+                {
+                    Id = Guid.NewGuid(),
+                    Product = product,
+                    CreatedDate = DateTime.UtcNow,
+                    IsMain = ismain == 0 ? true : false,
+                    Image = res.DisplayName
+                };
 
             }
+            ismain++;
             await _productRepository.AddAsync(product);
             await _productRepository.SaveAsync();
             return new ApiResponse { StatusCode = 201 };
