@@ -33,11 +33,12 @@ namespace GreenShopFinal.Register
 
             //services
             services.AddScoped<ICategoryService, CategoryServices>();
-            services.AddScoped<IProductService, ProductServices>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IMailService, MailService>();
+            services.AddScoped<IPhotoService, PhotoService>();
             services.AddScoped<IWishListService, WishListService>();
             services.AddTransient<ITokenHandler, TokenHandler>();
+            services.AddScoped<IProductService, ProductServices>();
             services.AddTransient<IGoogleIdTokenValidationService, GoogleIdTokenValidationService>();
 
             return services;

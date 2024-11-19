@@ -2,12 +2,7 @@
 using GreenShopFinal.Core.Repositories.Abstractions;
 using GreenShopFinal.Data.Context;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GreenShopFinal.Data.Repositories.Concretes
 {
@@ -52,10 +47,10 @@ namespace GreenShopFinal.Data.Repositories.Concretes
 
         public Task<int> SaveAsync()
         {
-           return _dbContext.SaveChangesAsync();
+            return _dbContext.SaveChangesAsync();
         }
 
-        
+
 
         public void Update(T entity)
         {

@@ -44,7 +44,6 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
                     IsMain = ismain == 0 ? true : false,
                     Image = res.DisplayName
                 };
-
             }
             ismain++;
             await _productRepository.AddAsync(product);

@@ -71,7 +71,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         {
             var userExists = await _userManager.FindByNameAsync(dto.UserName);
             if (userExists != null)
-                return new ApiResponse { StatusCode = 404, Message = "user is already exists" };
+                return new ApiResponse { StatusCode = 302, Message = "user is already exists" };
             var user = new BaseUser()
             {
                 UserName = dto.UserName,
@@ -88,7 +88,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             }
             try
             {
-                await _userManager.AddToRoleAsync(user, "Admin");
+                await _userManager.AddToRoleAsync(user, "User");
             }
             catch (Exception ex)
             {

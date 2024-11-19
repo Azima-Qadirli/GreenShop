@@ -1,7 +1,6 @@
 ﻿using GreenShopFinal.Core.Entities;
-using GreenShopFinal.Core.Repositories.Abstractions;
 
-namespace GreenShopFinal.Core.Repositories
+namespace GreenShopFinal.Core.Repositories.Abstractions
 {
     public interface IBaseImageRepository : IRepository<BaseImage>
     {
