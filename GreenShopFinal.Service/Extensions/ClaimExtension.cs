@@ -10,12 +10,15 @@ namespace GreenShopFinal.Service.Extensions
             if (user.Claims == null)
                 throw new ArgumentNullException(nameof(user.Claims));
 
-            var claim = user.Identities.First().Claims.FirstOrDefault(c => c.Type == "Id");
+            //var claim = user.Identities.First().Claims.FirstOrDefault(c => c.Type == "Id");
 
-            if (claim == null)
-                throw new TokenInvalidException("Token is not found");
+            //if (claim == null)
+            //    throw new TokenInvalidException("Token is not found");
 
-            return claim.Value;
+            //return claim.Value;
+
+            var claim = user.Identities.First().Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            return claim == null ? throw new TokenInvalidException("Token is not found") : claim.Value;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using GreenShopFinal.Service.Extensions;
+﻿using GreenShopFinal.Service.DTOs.WishList;
+using GreenShopFinal.Service.Extensions;
 using GreenShopFinal.Service.Services.AbstractServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -18,12 +19,20 @@ namespace GreenShopFinal.Permission.Client
             _wishListService = wishListService;
         }
         [HttpPost("{productId}/add")]
-        public async Task<IActionResult> AddProductToWishlist(Guid productId)
+        public async Task<IActionResult> AddProductToWishlist([FromForm] WishListPostDto dto)
         {
-            var userId = User.GetUserId();
-            var res = await _wishListService.AddProductToWishlist(userId, productId);
-            return StatusCode(res.StatusCode);
+            dto.UserId = User.GetUserId();
+            var res = await _wishListService.AddProductToWishlist(dto);
+            return StatusCode(res.StatusCode, res.Message);
         }
+
+        //public async Task<IActionResult> AddProductToWishlist(Guid productId)
+        //{
+        //    var userId = User.GetUserId();
+
+        //    var res = await _wishListService.AddProductToWishlist(userId, productId);
+        //    return StatusCode(res.StatusCode);
+        //}
         [HttpDelete("{productId}")]
         public async Task<IActionResult> RemoveProductFromWishList(string userId, Guid productId)
         {
@@ -36,5 +45,6 @@ namespace GreenShopFinal.Permission.Client
             var res = await _wishListService.GetWishlist(userId, productId);
             return StatusCode(res.StatusCode);
         }
+
     }
 }

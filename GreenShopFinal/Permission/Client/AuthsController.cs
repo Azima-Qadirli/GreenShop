@@ -50,7 +50,12 @@ namespace GreenShopFinal.Permission.Client
             var token = await _googleIdTokenValidationService.ValidateIdTokenAsync(dto);
             return Ok(token);
         }
-
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword([FromQuery] string email, ForgotPasswordDto dto)
+        {
+            var res = await _authService.ForgotPassword(email, dto);
+            return StatusCode(res.StatusCode, res.Message);
+        }
 
 
 

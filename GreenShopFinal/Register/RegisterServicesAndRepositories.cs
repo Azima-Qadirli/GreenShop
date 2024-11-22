@@ -40,7 +40,7 @@ namespace GreenShopFinal.Register
             services.AddTransient<ITokenHandler, TokenHandler>();
             services.AddScoped<IProductService, ProductServices>();
             services.AddTransient<IGoogleIdTokenValidationService, GoogleIdTokenValidationService>();
-
+            services.AddScoped<IAdminLoginService, AdminLoginService>();
             return services;
         }
     }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using GreenShopFinal.Core.Entities;
 using GreenShopFinal.Core.Repositories.Abstractions;
+using GreenShopFinal.Data.Context;
 using GreenShopFinal.Service.ApiResponses;
 using GreenShopFinal.Service.DTOs.Product;
 using GreenShopFinal.Service.Services.AbstractServices;
@@ -17,18 +18,30 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         private readonly IWebHostEnvironment _env;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPhotoService _photoService;
-        public ProductServices(IProductRepository productRepository, IMapper mapper, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor, IPhotoService photoService)
+        private readonly GreenShopFinalDbContext _dbContext;
+        public ProductServices(IProductRepository productRepository, IMapper mapper, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor, IPhotoService photoService, GreenShopFinalDbContext dbContext)
         {
             _productRepository = productRepository;
             _mapper = mapper;
             _env = env;
             _httpContextAccessor = httpContextAccessor;
             _photoService = photoService;
+            _dbContext = dbContext;
         }
 
         public async Task<ApiResponse> Create(ProductPostDto dto)
         {
-            Product product = _mapper.Map<Product>(dto);
+            Product product = new Product()
+            {
+                Id = Guid.NewGuid(),
+                CategoryId = dto.CategoryId,
+                ShortDescription = dto.ShortDescription,
+                LongDescription = dto.LongDescription,
+                Name = dto.Name,
+                Price = dto.Price,
+                UserId = dto.UserId
+            };
+
             string root = _env.WebRootPath;
             string path = "assets/img/product";
             var req = _httpContextAccessor.HttpContext.Request;
@@ -44,6 +57,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
                     IsMain = ismain == 0 ? true : false,
                     Image = res.DisplayName
                 };
+                _dbContext.BaseImages.Add(baseImage);
             }
             ismain++;
             await _productRepository.AddAsync(product);

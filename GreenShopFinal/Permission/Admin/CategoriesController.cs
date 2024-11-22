@@ -1,4 +1,5 @@
 ﻿using GreenShopFinal.Service.DTOs;
+using GreenShopFinal.Service.Extensions;
 using GreenShopFinal.Service.Services.AbstractServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ namespace GreenShopFinal.Permission.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromForm] CategoryPostDto dto)
         {
+            dto.UserId = User.GetUserId();
             var res = await _categoryService.Create(dto);
             return StatusCode(res.StatusCode, res.Message);
         }

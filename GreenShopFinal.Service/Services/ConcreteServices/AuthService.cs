@@ -24,6 +24,10 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         {
 
         };
+        private static readonly Dictionary<string, (int Code, DateTime Expiry)> resetCodes = new Dictionary<string, (int Code, DateTime Expiry)>
+        {
+
+        };
         private readonly IGoogleIdTokenValidationService _googleIdTokenValidationService;
         public AuthService(RoleManager<IdentityRole> roleManager, UserManager<BaseUser> userManager, IConfiguration configuration, SignInManager<BaseUser> signManager, IMailService mailService, IGoogleIdTokenValidationService googleIdTokenValidationService)
         {
@@ -134,16 +138,49 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             }
             return new ApiResponse { StatusCode = 404 };
         }
-
         public async Task<Token> GoogleLogin(GoogleLoginDto dto)
         {
             var result = await _googleIdTokenValidationService.ValidateIdTokenAsync(dto);
             return result;
         }
-
-        public Task<ApiResponse> ForgotPassword(string email)
+        public ApiResponse SendResetPasswordEmail(string email)
         {
-            throw new NotImplementedException();
+
+            Random random = new Random();
+            int code = random.Next(1000, 9999);
+            resetCodes[email] = (code, DateTime.Now.AddMinutes(2));
+            _mailService.SendMail(email, "Password reset email", $"Please use this {code} for resetting your password.");
+            return new ApiResponse { StatusCode = 200, Data = new { Email = email } };
         }
+        public ApiResponse ConfirmPassword(string email, int code)
+        {
+            if (resetCodes.TryGetValue(email, out var reset))
+            {
+                if (reset.Expiry < DateTime.Now || reset.Code != code)
+                {
+                    return new ApiResponse { StatusCode = 400, Message = "Code is not valid" };
+                }
+                resetCodes.Remove(email);
+                return new ApiResponse { StatusCode = 200, Data = new { Email = email } };
+            }
+            return new ApiResponse { StatusCode = 404, Message = "No matching account." };
+        }
+        public async Task<ApiResponse> ForgotPassword(string email, ForgotPasswordDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                //return new ApiResponse { StatusCode = 404 };
+                throw new UserNotFoundException("User is not found.");
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            var res = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
+
+            if (res == null)
+                return new ApiResponse { StatusCode = 500 };
+
+            return new ApiResponse { StatusCode = 200, Message = "Password reset successfully" };
+        }
+
+
     }
 }

@@ -16,42 +16,54 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         private readonly GreenShopFinalDbContext _greenShopFinalDbContext;
         private readonly UserManager<BaseUser> _userManager;
         private readonly IProductRepository _productRepository;
-        public WishListService(GreenShopFinalDbContext greenShopFinalDbContext, UserManager<BaseUser> userManager, IProductRepository productRepository)
+        private readonly IWishListRepository _wishlistRepository;
+        public WishListService(GreenShopFinalDbContext greenShopFinalDbContext, UserManager<BaseUser> userManager, IProductRepository productRepository, IWishListRepository wishlistRepository)
         {
             _greenShopFinalDbContext = greenShopFinalDbContext;
             _userManager = userManager;
             _productRepository = productRepository;
+            _wishlistRepository = wishlistRepository;
         }
 
-        public async Task<ApiResponse> AddProductToWishlist(string userId, Guid productId)
+        public async Task<ApiResponse> AddProductToWishlist(WishListPostDto dto)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            //var user = await _userManager.FindByIdAsync(userId);
 
-            if (user is null)
-                throw new UserNotFoundException("User not found");
+            //if (user is null)
+            //    throw new UserNotFoundException("User not found");
 
-            var product = await _productRepository.GetByIdAsync(productId);
+            //var product = await _productRepository.GetByIdAsync(productId);
 
-            if (product is null)
-                throw new ProductNotFoundException("Product not found");
+            //if (product is null)
+            //    throw new ProductNotFoundException("Product not found");
 
-            var wishlist = new Wishlist()
+            //var wishlist = new Wishlist()
+            //{
+            //    Id = Guid.NewGuid(),
+            //    CreatedDate = DateTime.UtcNow,
+            //    ProductId = productId,
+            //    UserId = user.Id,
+            //};
+            //try
+            //{
+            //    await _greenShopFinalDbContext.AddAsync(wishlist);
+            //    await _greenShopFinalDbContext.SaveChangesAsync();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.Message);
+            //    throw;
+            //}
+            //return new ApiResponse { StatusCode = 201, Data = wishlist.Id };
+            Wishlist wishlist = new()
             {
                 Id = Guid.NewGuid(),
-                CreatedDate = DateTime.UtcNow,
-                ProductId = productId,
-                UserId = user.Id,
+                UserId = dto.UserId,
+                ProductId = dto.ProductId,
+                CreatedDate = DateTime.UtcNow
             };
-            try
-            {
-                await _greenShopFinalDbContext.AddAsync(wishlist);
-                await _greenShopFinalDbContext.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                throw;
-            }
+            await _wishlistRepository.AddAsync(wishlist);
+            await _wishlistRepository.SaveAsync();
             return new ApiResponse { StatusCode = 201, Data = wishlist.Id };
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace GreenShopFinal.Service.DTOs.Auth
 {
-    public record RegisterDto
+    public record AdminRegisterDto
     {
         public string UserName { get; set; }
         public string Email { get; set; }

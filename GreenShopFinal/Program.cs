@@ -1,6 +1,7 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using GreenShopFinal.Register;
+using GreenShopFinal.Service.Helpers;
 using GreenShopFinal.Service.Mapping;
 using GreenShopFinal.Service.Validations.Category;
 
@@ -19,6 +20,9 @@ builder.Services.
     .RegisterJWTService(builder.Configuration)
     .RegisterUserServices()
     .RegisterConfigureService();
+
+//CloudinarySettings
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
 
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
