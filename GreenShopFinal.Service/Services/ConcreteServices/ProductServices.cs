@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using GreenShopFinal.Core.Entities;
+using GreenShopFinal.Core.Entities.AppUser;
 using GreenShopFinal.Core.Repositories.Abstractions;
 using GreenShopFinal.Data.Context;
 using GreenShopFinal.Service.ApiResponses;
@@ -7,6 +8,7 @@ using GreenShopFinal.Service.DTOs.Product;
 using GreenShopFinal.Service.Services.AbstractServices;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GreenShopFinal.Service.Services.ConcreteServices
@@ -19,7 +21,8 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPhotoService _photoService;
         private readonly GreenShopFinalDbContext _dbContext;
-        public ProductServices(IProductRepository productRepository, IMapper mapper, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor, IPhotoService photoService, GreenShopFinalDbContext dbContext)
+        private readonly UserManager<BaseUser> _userManager;
+        public ProductServices(IProductRepository productRepository, IMapper mapper, IWebHostEnvironment env, IHttpContextAccessor httpContextAccessor, IPhotoService photoService, GreenShopFinalDbContext dbContext, UserManager<BaseUser> userManager)
         {
             _productRepository = productRepository;
             _mapper = mapper;
@@ -27,6 +30,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             _httpContextAccessor = httpContextAccessor;
             _photoService = photoService;
             _dbContext = dbContext;
+            _userManager = userManager;
         }
 
         public async Task<ApiResponse> Create(ProductPostDto dto)
@@ -39,6 +43,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
                 LongDescription = dto.LongDescription,
                 Name = dto.Name,
                 Price = dto.Price,
+                Size = dto.ProductSize,
                 UserId = dto.UserId
             };
 
@@ -67,7 +72,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
 
         public async Task<ApiResponse> GetAll()
         {
-            var products = _productRepository.GetAll(x => x.IsDeleted);
+            var products = _productRepository.GetAll(x => !x.IsDeleted);
             List<ProductGetDto> dtos = new List<ProductGetDto>();
             dtos = await products.Select(p => new ProductGetDto
             {
@@ -75,7 +80,10 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
                 Id = p.Id,
                 Price = p.Price,
                 ShortDescription = p.ShortDescription,
-                LongDescription = p.LongDescription
+                LongDescription = p.LongDescription,
+                Images = p.Images,
+                ProductSize = p.Size,
+                Category = p.Category
             }).ToListAsync();
             return new ApiResponse { StatusCode = 200, Data = dtos };
         }
@@ -91,19 +99,19 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
 
         public async Task<ApiResponse> Remove(Guid id)
         {
-            var product = await _productRepository.GetAsync(p => p.IsDeleted && p.Id == id);
+            var product = await _productRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
             if (product == null)
                 return new ApiResponse { StatusCode = 404, Message = "item is not found" };
             product.IsDeleted = true;
             await _productRepository.SaveAsync();
             return new ApiResponse { StatusCode = 204 };
         }
-
         public async Task<ApiResponse> Update(Guid id, ProductPutDto dto)
         {
-            var product = await _productRepository.GetAsync(p => p.IsDeleted && p.Id == id);
+            var product = await _productRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
             if (product == null)
                 return new ApiResponse { StatusCode = 404, Message = "Item is not found" };
+            product.CategoryId = dto.CategoryId;
             product.Name = dto.Name;
             product.Price = dto.Price;
             product.ShortDescription = dto.ShortDescription;

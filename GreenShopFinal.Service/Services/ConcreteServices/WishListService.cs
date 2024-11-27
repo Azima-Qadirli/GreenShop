@@ -69,7 +69,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
 
         public async Task<ApiResponse> GetWishlist(string userId, Guid productId)
         {
-            var products = _productRepository.GetAll(p => p.IsDeleted);
+            var products = _productRepository.GetAll(p => !p.IsDeleted);
             List<WishListGetDto> dtos = new List<WishListGetDto>();
             dtos = await products.Select(p => new WishListGetDto { UserId = p.UserId, ProductId = p.Id }).ToListAsync();
             return new ApiResponse { StatusCode = 200, Data = dtos };

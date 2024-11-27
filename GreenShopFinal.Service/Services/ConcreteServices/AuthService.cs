@@ -42,9 +42,13 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         public async Task<ApiResponse> Login(LoginDto dto)
         {
             var userExists = await _userManager.FindByNameAsync(dto.UserName);
-            if (userExists == null && await _userManager.CheckPasswordAsync(userExists, dto.Password))
+            if (userExists == null)
                 return new ApiResponse { StatusCode = 404, Message = "User not found" };
 
+            var result = await _userManager.CheckPasswordAsync(userExists, dto.Password);
+
+            if (!result)
+                return new ApiResponse { StatusCode = 404, Message = "User not found" };
             var userRoles = await _userManager.GetRolesAsync(userExists);
             var claim = new List<Claim>()
             {
@@ -82,7 +86,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
                 Email = dto.Email,
                 SecurityStamp = Guid.NewGuid().ToString()
             };
-            var res = await _userManager.CreateAsync(user);
+            var res = await _userManager.CreateAsync(user, dto.Password);
             if (!res.Succeeded)
             {
                 foreach (var error in res.Errors)
@@ -102,6 +106,8 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             var result = await SendEmail(user);
             return new ApiResponse { StatusCode = 200, Data = result.Data };
         }
+
+        //SendEmail method is used for registration process
         public async Task<ApiResponse> SendEmail(BaseUser user)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -111,6 +117,7 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             _mailService.SendMail(user.Email, "Verify your email", $"Please verify your email to finish registration process {code}");
             return new ApiResponse { StatusCode = 200, Data = (user, token) };
         }
+        //ConfirmEmail method is used to confirm email for the first time for registration
         public async Task<ApiResponse> ConfirmEmail(string userId, string token, int input)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -143,41 +150,27 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             var result = await _googleIdTokenValidationService.ValidateIdTokenAsync(dto);
             return result;
         }
-        public ApiResponse SendResetPasswordEmail(string email)
-        {
-
-            Random random = new Random();
-            int code = random.Next(1000, 9999);
-            resetCodes[email] = (code, DateTime.Now.AddMinutes(2));
-            _mailService.SendMail(email, "Password reset email", $"Please use this {code} for resetting your password.");
-            return new ApiResponse { StatusCode = 200, Data = new { Email = email } };
-        }
-        public ApiResponse ConfirmPassword(string email, int code)
-        {
-            if (resetCodes.TryGetValue(email, out var reset))
-            {
-                if (reset.Expiry < DateTime.Now || reset.Code != code)
-                {
-                    return new ApiResponse { StatusCode = 400, Message = "Code is not valid" };
-                }
-                resetCodes.Remove(email);
-                return new ApiResponse { StatusCode = 200, Data = new { Email = email } };
-            }
-            return new ApiResponse { StatusCode = 404, Message = "No matching account." };
-        }
+        //ForgotPassword method is used to change site's password when it is forgotten
         public async Task<ApiResponse> ForgotPassword(string email, ForgotPasswordDto dto)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
-                //return new ApiResponse { StatusCode = 404 };
                 throw new UserNotFoundException("User is not found.");
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            //var result = await SendResetPasswordEmail(email);
+            //if (result.Data == null)
+            //    return new ApiResponse { StatusCode = 404, Message = "Email doesnt exist" };
 
             var res = await _userManager.ResetPasswordAsync(user, token, dto.NewPassword);
-
             if (res == null)
                 return new ApiResponse { StatusCode = 500 };
 
+            var netice = await _userManager.UpdateAsync(user);
+
+            if (!netice.Succeeded)
+            {
+                return new ApiResponse { StatusCode = 400, Data = netice.Errors };
+            }
             return new ApiResponse { StatusCode = 200, Message = "Password reset successfully" };
         }
 

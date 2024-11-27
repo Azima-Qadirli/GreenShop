@@ -58,7 +58,7 @@ namespace GreenShopFinal.Permission.Client
         }
 
 
-
+        //You only need to run this code once, if the roles have been created, there is no need to run it a second time.
         //[HttpPost("CreateRole")]
         //public async Task<IActionResult> CreateRole()
         //{

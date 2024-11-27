@@ -35,14 +35,14 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         {
             var userExists = await _userManager.FindByNameAsync(dto.UserName);
             if (userExists != null)
-                return new ApiResponse { StatusCode = 302, Message = "user is already exists" };
+                return new ApiResponse { StatusCode = 302, Message = "user already exists" };
             var user = new BaseUser()
             {
                 UserName = dto.UserName,
                 Email = dto.Email,
                 SecurityStamp = Guid.NewGuid().ToString()
             };
-            var res = await _userManager.CreateAsync(user);
+            var res = await _userManager.CreateAsync(user, dto.Password);
             if (!res.Succeeded)
             {
                 foreach (var error in res.Errors)
@@ -66,15 +66,19 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
         public async Task<ApiResponse> AdminLogin(AdminLoginDto dto)
         {
             var userExists = await _userManager.FindByNameAsync(dto.UserName);
-            if (userExists != null && await _userManager.CheckPasswordAsync(userExists, dto.Password))
-                //return new ApiResponse { StatusCode = 404,Message="User not found"};
+            //if (userExists != null && await _userManager.CheckPasswordAsync(userExists, dto.Password))
+            //    //return new ApiResponse { StatusCode = 404,Message="User not found"};
+            //    throw new UserNotFoundException("User not found");
+            if (userExists == null)
+                throw new UserNotFoundException("User not found ");
+            if (!await _userManager.CheckPasswordAsync(userExists, dto.Password))
                 throw new UserNotFoundException("User not found");
             var userRoles = await _userManager.GetRolesAsync(userExists);
             var claim = new List<Claim>()
-     {
-         new Claim(ClaimTypes.Name,dto.UserName),
-         new Claim(ClaimTypes.NameIdentifier,userExists.Id)
-     };
+            {
+                 new Claim(ClaimTypes.Name,dto.UserName),
+                 new Claim(ClaimTypes.NameIdentifier,userExists.Id)
+            };
             foreach (var role in userRoles)
             {
                 claim.Add(new Claim(ClaimTypes.Role, role));
@@ -89,11 +93,10 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
                     signingCredentials: new SigningCredentials(secret_key, SecurityAlgorithms.HmacSha256)
                 );
             var token = new JwtSecurityTokenHandler().WriteToken(jwtToken);
+            await _userManager.UpdateAsync(userExists);
             return new ApiResponse { StatusCode = 200, Data = token };
             //return username == _userName && password == _password;
         }
-
-
         public async Task<ApiResponse> SendMail(BaseUser user)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -103,7 +106,6 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             _mailService.SendMail(user.Email, "Verify your email", $"Please verify your email to finish registration process {code}");
             return new ApiResponse { StatusCode = 200, Data = (user, token) };
         }
-
         public async Task<ApiResponse> ConfirmEmail(string userId, string token, int input)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -115,9 +117,10 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             {
                 if (verification.Expiry < DateTime.Now || verification.Code != input)
                 {
+                    verificationCodes.Remove(user.Id);
                     return new ApiResponse { StatusCode = 404, Message = "Verification code is not valid" };
                 }
-                verificationCodes.Remove(user.Id);
+                //verificationCodes.Remove(user.Id);
                 user.EmailConfirmed = true;
 
                 var result = await _userManager.UpdateAsync(user);
@@ -131,5 +134,6 @@ namespace GreenShopFinal.Service.Services.ConcreteServices
             }
             return new ApiResponse { StatusCode = 404 };
         }
+
     }
 }

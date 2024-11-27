@@ -5,7 +5,7 @@ namespace GreenShopFinal.Service.Exceptions
 {
     public class InvalidPasswordException : BaseException
     {
-        public InvalidPasswordException(string msg, HttpStatusCode statusCode = HttpStatusCode.InternalServerError) : base(msg, statusCode)
+        public InvalidPasswordException(string msg, HttpStatusCode statusCode = HttpStatusCode.NotFound) : base(msg, statusCode)
         {
         }
     }

@@ -10,11 +10,10 @@ namespace GreenShopFinal.Service.Services.AbstractServices
         public Task<ApiResponse> Login(LoginDto dto);
         public Task<Token> GoogleLogin(GoogleLoginDto dto);
         public Task<ApiResponse> Register(RegisterDto dto);
-        public Task<ApiResponse> SendEmail(BaseUser user);
-        ApiResponse SendResetPasswordEmail(string email);
-        ApiResponse ConfirmPassword(string email, int code);
-        public Task<ApiResponse> ForgotPassword(string email, ForgotPasswordDto dto);
         public Task<ApiResponse> ConfirmEmail(string userId, string token, int input);
+        public Task<ApiResponse> SendEmail(BaseUser user);
+        public Task<ApiResponse> ForgotPassword(string email, ForgotPasswordDto dto);
         void Logout();
+
     }
 }

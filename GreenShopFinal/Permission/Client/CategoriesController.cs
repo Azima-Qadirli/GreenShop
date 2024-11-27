@@ -26,5 +26,7 @@ namespace GreenShopFinal.Permission.Client.Controllers
             var res = await _categoryService.GetById(id);
             return StatusCode(res.StatusCode, res.Data);
         }
+
+
     }
 }

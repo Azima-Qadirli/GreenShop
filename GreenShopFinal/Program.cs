@@ -1,5 +1,6 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using GreenShopFinal.Extensions;
 using GreenShopFinal.Register;
 using GreenShopFinal.Service.Helpers;
 using GreenShopFinal.Service.Mapping;
@@ -30,9 +31,11 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.ConfigureException();
 app.UseStaticFiles();
 app.UseHttpsRedirection();
 app.UseAuthentication();

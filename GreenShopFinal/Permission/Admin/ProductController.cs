@@ -22,7 +22,7 @@ namespace GreenShopFinal.Permission.Admin.Controllers
             var res = await _productService.Create(dto);
             return StatusCode(res.StatusCode, res.Message);
         }
-        [HttpPut("category/{id}")]
+        [HttpPut("product/{id}")]
         public async Task<IActionResult> Update(Guid id, ProductPutDto dto)
         {
             var res = await _productService.Update(id, dto);

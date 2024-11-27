@@ -13,7 +13,7 @@ namespace GreenShopFinal.Service.DTOs.Product
         public List<BaseImage> Images { get; set; }
         public ProductSize ProductSize { get; set; }
         public Category Category { get; set; }
-        public List<Review> Reviews { get; set; }
+        public List<Review>? Reviews { get; set; }
 
     }
 }

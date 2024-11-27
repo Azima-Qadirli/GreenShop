@@ -28,6 +28,7 @@ namespace GreenShopFinal.Permission.Admin.Controllers
         [HttpPut("category/{id}")]
         public async Task<IActionResult> Update(Guid id, CategoryPutDto dto)
         {
+            dto.UserId = User.GetUserId();
             var res = await _categoryService.Update(id, dto);
             return StatusCode(res.StatusCode, res.Message);
         }
